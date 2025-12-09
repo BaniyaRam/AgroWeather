@@ -16,9 +16,17 @@ export default function Dashboard() {
   const [lastAlert, setLastAlert] = useState("");
 
   const apiKey = "e61f26f5187d67b5bc0af2a477b77e66";
+  const offlineDevMode = false; // set true to simulate offline in dev
+
+  const isOffline = offlineDevMode || !navigator.onLine;
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator)
+      navigator.serviceWorker.register("/sw.js");
+  }, []);
 
   const getFarmingAlert = (data = weatherData) => {
-    if (!data) return null;
+    if (!data) return "No data available";
     const temp = data.temperature ?? data.temp;
     const humidity = data.humidity ?? 0;
     const condition = data.condition?.toLowerCase() ?? "";
@@ -37,16 +45,8 @@ export default function Dashboard() {
     if (!("speechSynthesis" in window)) return;
     const utterance = new SpeechSynthesisUtterance(message);
     utterance.lang = "en-US";
-    utterance.pitch = 1;
-    utterance.rate = 1;
-    utterance.volume = 1;
     window.speechSynthesis.speak(utterance);
   };
-
-  useEffect(() => {
-    if ("serviceWorker" in navigator)
-      navigator.serviceWorker.register("/sw.js");
-  }, []);
 
   const requestNotificationPermission = async () => {
     const permission = await Notification.requestPermission();
@@ -84,6 +84,17 @@ export default function Dashboard() {
     const fetchWeather = async () => {
       setLoading(true);
       setError(null);
+
+      const cachedWeather = JSON.parse(localStorage.getItem("lastWeather"));
+      const cachedForecast = JSON.parse(localStorage.getItem("lastForecast"));
+
+      if (isOffline) {
+        if (cachedWeather) setWeatherData(cachedWeather);
+        if (cachedForecast) setForecastData(cachedForecast);
+        setLoading(false);
+        return;
+      }
+
       try {
         const weatherRes = await fetch(
           `https://api.openweathermap.org/data/2.5/weather?q=${city},NP&appid=${apiKey}&units=metric`
@@ -100,8 +111,9 @@ export default function Dashboard() {
           icon: `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`,
         };
         setWeatherData(currentWeather);
-        const alertMessage = getFarmingAlert(currentWeather);
-        sendNotification("Farming Alert", alertMessage);
+        localStorage.setItem("lastWeather", JSON.stringify(currentWeather));
+        sendNotification("Farming Alert", getFarmingAlert(currentWeather));
+
         const forecastRes = await fetch(
           `https://api.openweathermap.org/data/2.5/forecast?q=${city},NP&appid=${apiKey}&units=metric`
         );
@@ -130,16 +142,18 @@ export default function Dashboard() {
             };
           });
         setForecastData(dailyForecast);
+        localStorage.setItem("lastForecast", JSON.stringify(dailyForecast));
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
+
     fetchWeather();
     const interval = setInterval(fetchWeather, 1000 * 60 * 2);
     return () => clearInterval(interval);
-  }, [city, notificationsEnabled]);
+  }, [city, notificationsEnabled, isOffline]);
 
   useEffect(() => {
     setSelectedDay(null);
@@ -149,6 +163,11 @@ export default function Dashboard() {
     <>
       <Header />
       <div className="min-h-screen p-5 bg-blue-50">
+        {isOffline && (
+          <div className="p-2 mb-3 text-center text-white bg-red-500 rounded">
+            You are offline — showing last saved data
+          </div>
+        )}
         <div className="flex items-center gap-3 mb-5">
           <label className="font-medium text-blue-700">Select City:</label>
           <select

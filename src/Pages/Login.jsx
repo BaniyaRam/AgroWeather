@@ -18,12 +18,16 @@ export default function Login() {
     }
 
     if (email === savedUser.email && password === savedUser.password) {
-      toast.success("Login Successful!");
       localStorage.setItem("loggedInUser", JSON.stringify(savedUser));
+      toast.success("Login Successful!");
       navigate("/dashboard");
     } else {
       toast.error("Invalid email or password");
     }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleLogin();
   };
 
   return (
@@ -36,6 +40,7 @@ export default function Login() {
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={handleKeyDown}
             type="text"
             placeholder="Enter your email"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
@@ -48,6 +53,7 @@ export default function Login() {
             <input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={handleKeyDown}
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"

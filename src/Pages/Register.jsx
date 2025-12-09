@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -13,6 +13,14 @@ export default function Register() {
   const [district, setDistrict] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  const emailRef = useRef();
+  const passwordRef = useRef();
+  const maleRef = useRef();
+  const femaleRef = useRef();
+  const provinceRef = useRef();
+  const districtRef = useRef();
+  const registerRef = useRef();
 
   const districts = {
     "Koshi Province": ["Morang", "Sunsari", "Jhapa", "Illam", "Dhankuta"],
@@ -40,6 +48,17 @@ export default function Register() {
       "Dadeldhura",
       "Baitadi",
     ],
+  };
+
+  const handleKeyDown = (e, nextRef, currentValue) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (!currentValue) {
+        toast.error("Please fill this field before proceeding");
+        return;
+      }
+      if (nextRef && nextRef.current) nextRef.current.focus();
+    }
   };
 
   const handleSubmit = () => {
@@ -71,6 +90,7 @@ export default function Register() {
           <input
             value={fullname}
             onChange={(e) => setFullname(e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, emailRef, fullname)}
             type="text"
             placeholder="Enter your Full Name"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
@@ -80,8 +100,10 @@ export default function Register() {
         <div className="mb-4">
           <label className="block mb-1 font-medium">Email</label>
           <input
+            ref={emailRef}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, passwordRef, email)}
             type="text"
             placeholder="Enter your email"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
@@ -92,8 +114,10 @@ export default function Register() {
           <label className="block mb-1 font-medium">Password</label>
           <div className="relative">
             <input
+              ref={passwordRef}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, maleRef, password)}
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
@@ -112,21 +136,25 @@ export default function Register() {
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-2">
               <input
+                ref={maleRef}
                 type="radio"
                 name="gender"
                 value="male"
                 checked={gender === "male"}
                 onChange={(e) => setGender(e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, femaleRef, gender)}
               />
               <span>Male</span>
             </label>
             <label className="flex items-center gap-2">
               <input
+                ref={femaleRef}
                 type="radio"
                 name="gender"
                 value="female"
                 checked={gender === "female"}
                 onChange={(e) => setGender(e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, provinceRef, gender)}
               />
               <span>Female</span>
             </label>
@@ -136,11 +164,13 @@ export default function Register() {
         <div className="mb-4">
           <label className="block mb-1 font-medium">Province</label>
           <select
+            ref={provinceRef}
             value={province}
             onChange={(e) => {
               setProvince(e.target.value);
               setDistrict("");
             }}
+            onKeyDown={(e) => handleKeyDown(e, districtRef, province)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select Province</option>
@@ -155,8 +185,10 @@ export default function Register() {
             <div className="mt-4">
               <label className="block mb-1 font-medium">District</label>
               <select
+                ref={districtRef}
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, registerRef, district)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select District</option>
@@ -171,6 +203,7 @@ export default function Register() {
         </div>
 
         <button
+          ref={registerRef}
           onClick={handleSubmit}
           className="w-full py-2 text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
         >
