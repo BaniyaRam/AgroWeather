@@ -4,6 +4,7 @@ import CurrentWeatherCard from "../components/CurrentWeatherCard";
 import ForecastCard from "../components/ForecastCard";
 import CropCalendar from "../components/CropCalender";
 import WeatherChart from "../components/WeatherChart";
+import CropRecommendation from "../components/CropRecommendation";
 
 export default function Dashboard() {
   const [city, setCity] = useState("Pokhara");
@@ -15,9 +16,8 @@ export default function Dashboard() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [lastAlert, setLastAlert] = useState("");
 
-  const apiKey = "e61f26f5187d67b5bc0af2a477b77e66";
-  const offlineDevMode = false; // set true to simulate offline in dev
-
+  const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
+  const offlineDevMode = false;
   const isOffline = offlineDevMode || !navigator.onLine;
 
   useEffect(() => {
@@ -96,6 +96,7 @@ export default function Dashboard() {
       }
 
       try {
+        // Current Weather
         const weatherRes = await fetch(
           `https://api.openweathermap.org/data/2.5/weather?q=${city},NP&appid=${apiKey}&units=metric`
         );
@@ -114,6 +115,7 @@ export default function Dashboard() {
         localStorage.setItem("lastWeather", JSON.stringify(currentWeather));
         sendNotification("Farming Alert", getFarmingAlert(currentWeather));
 
+        // Forecast
         const forecastRes = await fetch(
           `https://api.openweathermap.org/data/2.5/forecast?q=${city},NP&appid=${apiKey}&units=metric`
         );
@@ -151,7 +153,7 @@ export default function Dashboard() {
     };
 
     fetchWeather();
-    const interval = setInterval(fetchWeather, 1000 * 60 * 2);
+    const interval = setInterval(fetchWeather, 1000 * 60 * 2); // update every 2 min
     return () => clearInterval(interval);
   }, [city, notificationsEnabled, isOffline]);
 
@@ -168,6 +170,7 @@ export default function Dashboard() {
             You are offline — showing last saved data
           </div>
         )}
+
         <div className="flex items-center gap-3 mb-5">
           <label className="font-medium text-blue-700">Select City:</label>
           <select
@@ -205,13 +208,18 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-1">
             {weatherData && <CurrentWeatherCard data={weatherData} />}
+
             {weatherData && (
               <div className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg shadow">
                 <h2 className="font-semibold text-yellow-700">Farming Alert</h2>
                 <p className="mt-1 text-yellow-800">{getFarmingAlert()}</p>
               </div>
             )}
-            <CropCalendar />
+
+            {/* Crop Recommendation */}
+            {weatherData && <CropRecommendation weather={weatherData} />}
+
+            {/* <CropCalendar /> */}
           </div>
 
           <div className="space-y-6 lg:col-span-2">
@@ -226,6 +234,7 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
+
             {forecastData.length > 0 && (
               <div className="p-6 bg-white shadow rounded-xl h-96">
                 <WeatherChart forecastData={forecastData} />
