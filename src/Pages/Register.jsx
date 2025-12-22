@@ -66,15 +66,39 @@ export default function Register() {
       toast.error("Please fill all fields");
       return;
     }
-    const userData = { fullname, email, password, gender, province, district };
-    localStorage.setItem("registeredUser", JSON.stringify(userData));
+
+    const newUser = {
+      fullname,
+      email,
+      password,
+      gender,
+      province,
+      district,
+    };
+
+    const existingUsers =
+      JSON.parse(localStorage.getItem("registeredUsers")) || [];
+
+    const emailExists = existingUsers.some((user) => user.email === email);
+
+    if (emailExists) {
+      toast.error("Email already registered");
+      return;
+    }
+
+    const updatedUsers = [...existingUsers, newUser];
+
+    localStorage.setItem("registeredUsers", JSON.stringify(updatedUsers));
+
     toast.success("User Registered Successfully!");
+
     setFullname("");
     setEmail("");
     setPassword("");
     setGender("");
     setProvince("");
     setDistrict("");
+
     navigate("/login");
   };
 
@@ -208,6 +232,13 @@ export default function Register() {
           className="w-full py-2 text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
         >
           Register
+        </button>
+
+        <button
+          onClick={() => navigate("/login")}
+          className="w-full mt-4 text-sm text-blue-600 underline hover:text-blue-800"
+        >
+          Already have an account? Login
         </button>
       </div>
     </div>

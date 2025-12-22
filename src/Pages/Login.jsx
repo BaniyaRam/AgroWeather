@@ -11,14 +11,19 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    const savedUser = JSON.parse(localStorage.getItem("registeredUser"));
-    if (!savedUser) {
+    const savedUsers =
+      JSON.parse(localStorage.getItem("registeredUsers")) || [];
+    if (savedUsers.length === 0) {
       toast.error("No registered user found. Please register first.");
       return;
     }
 
-    if (email === savedUser.email && password === savedUser.password) {
-      localStorage.setItem("loggedInUser", JSON.stringify(savedUser));
+    const user = savedUsers.find(
+      (u) => u.email === email && u.password === password
+    );
+
+    if (user) {
+      localStorage.setItem("loggedInUser", JSON.stringify(user));
       toast.success("Login Successful!");
       navigate("/dashboard");
     } else {

@@ -9,7 +9,7 @@ export default function Header() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const savedUser = JSON.parse(localStorage.getItem("registeredUser"));
+    const savedUser = JSON.parse(localStorage.getItem("LoggedInUser"));
     if (savedUser) setUser(savedUser);
   }, []);
 

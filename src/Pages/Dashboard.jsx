@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import CurrentWeatherCard from "../components/CurrentWeatherCard";
 import ForecastCard from "../components/ForecastCard";
-import CropCalendar from "../components/CropCalender";
 import WeatherChart from "../components/WeatherChart";
 import CropRecommendation from "../components/CropRecommendation";
 
